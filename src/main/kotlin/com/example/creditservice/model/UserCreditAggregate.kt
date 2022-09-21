@@ -7,6 +7,12 @@ import java.time.Instant
 import java.util.Date
 
 class UserCreditAggregate(
+    /*
+    candidate names for this aggregate:
+    UserCreditConsumption
+    UserCreditHistory
+    UserCreditActivity
+     */
     private val userId:String,
     private val instant:Instant,
     private val creditRepository: CreditRepository,
