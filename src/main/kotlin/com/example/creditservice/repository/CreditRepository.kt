@@ -6,6 +6,6 @@ import org.springframework.data.repository.CrudRepository
 import java.util.Date
 
 interface CreditRepository : CrudRepository<Credit,Long> {
-    @Query("select c from Credit c where c.userId = :userId and c.expireDate > :expireDate order by c.expireDate asc")
+    @Query("select c from Credit c where c.amount > 0 and c.userId = :userId and c.expireDate > :expireDate order by c.expireDate asc")
     fun findAvailableCredits(userId: String, expireDate:Date) : List<Credit>
 }
