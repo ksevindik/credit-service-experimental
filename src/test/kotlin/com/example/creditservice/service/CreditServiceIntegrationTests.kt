@@ -1,48 +1,25 @@
 package com.example.creditservice.service
 
+import com.example.creditservice.BaseIntegrationTests
 import com.example.creditservice.model.AddCreditOperation
 import com.example.creditservice.model.Credit
 import com.example.creditservice.model.UseCreditOperation
 import com.example.creditservice.model.CreditUsageStatus
 import com.example.creditservice.model.dto.AddCreditRequest
-import org.h2.tools.Server
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.jdbc.datasource.DataSourceUtils
-import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.Date
-import javax.persistence.EntityManager
-import javax.sql.DataSource
 
-@SpringBootTest
-@Transactional
-class CreditServiceIntegrationTests {
+class CreditServiceIntegrationTests : BaseIntegrationTests() {
 
     @Autowired
     private lateinit var creditService: CreditService
 
     @Autowired
     private lateinit var dateFormatter: DateFormatter
-
-    @Autowired
-    protected lateinit var dataSource: DataSource
-
-    @Autowired
-    protected lateinit var entityManager: EntityManager
-
-    fun openH2Console() {
-        Server.startWebServer(DataSourceUtils.getConnection(dataSource))
-    }
-
-    @Test
-    private fun flushAndClear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @Test
     fun `it should create a new credit with add credit operation when add credit request received`() {
@@ -108,7 +85,7 @@ class CreditServiceIntegrationTests {
         //then
         flushAndClear()
         //when
-        creditService.captureCredits(paymentAttemptId)
+        creditService.captureCredits("user1", paymentAttemptId)
 
         flushAndClear()
 
@@ -136,7 +113,7 @@ class CreditServiceIntegrationTests {
         flushAndClear()
 
         //when
-        creditService.revertCredits(paymentAttemptId)
+        creditService.revertCredits("user1", paymentAttemptId)
 
         flushAndClear()
 
