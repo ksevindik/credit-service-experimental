@@ -13,9 +13,16 @@ class UserCreditAggregate(
     private val creditOperationRepository: CreditOperationRepository) {
 
     fun getAvailableCreditAmount(): BigDecimal {
-        val availableCredits = creditRepository.findAvailableCredits(userId, Date.from(instant))
-        return availableCredits.sumOf { it.amount }
+        val availableCredits = findAvailableCredits()
+        return calculateAvailableCreditAmount(availableCredits)
     }
+
+    private fun findAvailableCredits(): List<Credit> {
+        return creditRepository.findAvailableCredits(userId, Date.from(instant))
+    }
+
+    private fun calculateAvailableCreditAmount(availableCredits: List<Credit>) =
+        availableCredits.sumOf { it.amount }
 
     fun addCredit(requestId: Long, amount: BigDecimal, startDate: Date = Date(), expireDate: Date?) {
         var credit = Credit(requestId,userId,amount,startDate,expireDate)
@@ -25,7 +32,11 @@ class UserCreditAggregate(
     }
 
     fun reserveCreditAmount(reserveAmount: BigDecimal, paymentAttemptId: String) {
-        val availableCredits = creditRepository.findAvailableCredits(userId, Date.from(instant))
+        val availableCredits = findAvailableCredits()
+        val availableCreditAmount = calculateAvailableCreditAmount(availableCredits)
+        if(availableCreditAmount.compareTo(reserveAmount) < 0) {
+            throw IllegalStateException("Available credit amount is not enough to satisfy reserve amount")
+        }
         var remainingAmount = reserveAmount
         for(credit in availableCredits) {
             val usedAmount = credit.consume(remainingAmount)
