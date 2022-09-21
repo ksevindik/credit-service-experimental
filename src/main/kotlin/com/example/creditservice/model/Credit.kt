@@ -40,4 +40,16 @@ class Credit(
     override fun toString(): String {
         return "Credit(id=$id, userId='$userId', amount=$amount, startDate=$startDate, expireDate=$expireDate)"
     }
+
+    fun consume(requestedAmount:BigDecimal) : BigDecimal {
+        var usedAmount : BigDecimal? = null
+        if(this.amount.compareTo(requestedAmount) > 0) {
+            usedAmount = requestedAmount
+            this.amount = this.amount.subtract(requestedAmount)
+        } else {
+            usedAmount = this.amount
+            this.amount = BigDecimal.ZERO
+        }
+        return usedAmount
+    }
 }

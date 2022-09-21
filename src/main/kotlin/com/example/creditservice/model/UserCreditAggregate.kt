@@ -28,26 +28,12 @@ class UserCreditAggregate(
         val availableCredits = creditRepository.findAvailableCredits(userId, Date.from(instant))
         var remainingAmount = reserveAmount
         for(credit in availableCredits) {
-            val pair = calculateUsedAndRemainingAmounts(credit.amount, remainingAmount)
-            credit.amount = credit.amount.subtract(pair.first)
-            remainingAmount = pair.second
+            val usedAmount = credit.consume(remainingAmount)
+            remainingAmount = remainingAmount.subtract(usedAmount)
             creditRepository.save(credit)
-            creditOperationRepository.save(UseCreditOperation(credit,pair.first, paymentAttemptId))
-            if(remainingAmount.equals(BigDecimal.ZERO)) break
+            creditOperationRepository.save(UseCreditOperation(credit,usedAmount, paymentAttemptId))
+            if(remainingAmount.compareTo(BigDecimal.ZERO) == 0) break
         }
-    }
-
-
-    private fun calculateUsedAndRemainingAmounts(amount:BigDecimal, requestedAmount:BigDecimal) : Pair<BigDecimal,BigDecimal> {
-        var remainingAmount = requestedAmount.subtract(amount)
-        var usedAmount:BigDecimal? = null
-        if(remainingAmount.toLong() <= 0) {
-            usedAmount = requestedAmount
-            remainingAmount = BigDecimal.ZERO
-        } else {
-            usedAmount = amount
-        }
-        return Pair(usedAmount,remainingAmount)
     }
 
     fun captureCredits(paymentAttemptId: String) {
